@@ -2,22 +2,92 @@
 <html>
 <head>
   <title>Live Dovka Boat Data</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/justgage@1.4.0/justgage.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/raphael"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    pre { background: #eee; padding: 10px; }
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 1rem;
+    }
+    #gauges {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .gauge-container {
+      width: 150px;
+      height: 130px;
+    }
+    #map {
+      height: 300px;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      overflow: auto;
+    }
   </style>
 </head>
 <body>
   <h1>Dovka Live Dashboard</h1>
+
+  <!-- Gauges -->
+  <div id="gauges">
+    <div class="gauge-container"><div id="sogGauge"></div><p style="text-align:center;">SOG (kt)</p></div>
+    <div class="gauge-container"><div id="awsGauge"></div><p style="text-align:center;">AWS (kt)</p></div>
+    <div class="gauge-container"><div id="twsGauge"></div><p style="text-align:center;">TWS (kt)</p></div>
+  </div>
+
+  <!-- Map -->
+  <div id="map"></div>
+
+  <!-- Raw Data -->
+  <h3>Raw NMEA Data</h3>
   <pre id="display">Loading...</pre>
 
   <script>
+    // Initialize map
+    const map = L.map('map').setView([0, 0], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+    }).addTo(map);
+    const marker = L.marker([0, 0]).addTo(map);
+
+    // Initialize gauges
+    const sogGauge = new JustGage({ id: "sogGauge", value: 0, min: 0, max: 10 });
+    const awsGauge = new JustGage({ id: "awsGauge", value: 0, min: 0, max: 30 });
+    const twsGauge = new JustGage({ id: "twsGauge", value: 0, min: 0, max: 30 });
+
     async function fetchData() {
       const res = await fetch("https://nmea-dashboard.onrender.com/api/data");
       const data = await res.json();
+
+      // Update raw data display
       document.getElementById("display").textContent = JSON.stringify(data, null, 2);
+
+      // Update gauges if values exist
+      if (data.sog) sogGauge.refresh(data.sog);
+      if (data.aws) awsGauge.refresh(data.aws);
+      if (data.tws) twsGauge.refresh(data.tws);
+
+      // Update map
+      if (data.lat && data.lon) {
+        const lat = parseFloat(data.lat);
+        const lon = parseFloat(data.lon);
+        marker.setLatLng([lat, lon]);
+        map.setView([lat, lon], map.getZoom());
+      }
     }
 
+    fetchData();
     setInterval(fetchData, 3000);
   </script>
 </body>
