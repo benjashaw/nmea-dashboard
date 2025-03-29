@@ -20,3 +20,7 @@ async def receive_nmea(req: Request):
 @app.get("/api/data")
 def get_nmea_data():
     return data_store
+
+@app.get("/")
+def root():
+    return {"status": "running"}
