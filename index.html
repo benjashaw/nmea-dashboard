@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Dovka Boat Data</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    pre { background: #eee; padding: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Dovka Live Dashboard</h1>
+  <pre id="display">Loading...</pre>
+
+  <script>
+    async function fetchData() {
+      const res = await fetch("https://nmea-dashboard.onrender.com/api/data");
+      const data = await res.json();
+      document.getElementById("display").textContent = JSON.stringify(data, null, 2);
+    }
+
+    setInterval(fetchData, 3000);
+  </script>
+</body>
+</html>
