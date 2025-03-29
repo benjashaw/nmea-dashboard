@@ -1,59 +1,96 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dovka Live Dashboard</title>
+  <title>Dovka Live Boat Data</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/justgage@1.4.0/justgage.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/raphael"></script>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 1rem;
+      background: #f9f9f9;
+      color: #333;
     }
-    #gauges {
+
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .data-grid {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .data-row {
       display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #eee;
     }
-    .gauge-container {
-      width: 150px;
-      height: 130px;
+
+    .data-row:last-child {
+      border-bottom: none;
     }
-    #map {
-      height: 300px;
-      margin-bottom: 1rem;
-      border: 1px solid #ccc;
+
+    .label {
+      font-weight: 600;
     }
-    pre {
-      background: #f4f4f4;
-      padding: 1rem;
-      border: 1px solid #ccc;
-      overflow: auto;
+
+    .value {
+      font-family: monospace;
+    }
+
+    .updated {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #888;
     }
   </style>
 </head>
 <body>
   <h1>Dovka Live Dashboard</h1>
 
-  <!-- Gauges -->
-  <div id="gauges">
-    <div class="gauge-container"><div id="sogGauge"></div><p style="text-align:center;">SOG (kt)</p></div>
-    <div class="gauge-container"><div id="awsGauge"></div><p style="text-align:center;">AWS (kt)</p></div>
-    <div class="gauge-container"><div id="twsGauge"></div><p style="text-align:center;">TWS (kt)</p></div>
+  <div class="data-grid" id="data">
+    <div class="data-row"><span class="label">Latitude:</span><span class="value" id="lat">--</span></div>
+    <div class="data-row"><span class="label">Longitude:</span><span class="value" id="lon">--</span></div>
+    <div class="data-row"><span class="label">COG:</span><span class="value" id="cog">--</span></div>
+    <div class="data-row"><span class="label">SOG:</span><span class="value" id="sog">--</span></div>
+    <div class="data-row"><span class="label">AWS:</span><span class="value" id="aws">--</span></div>
+    <div class="data-row"><span class="label">AWA:</span><span class="value" id="awa">--</span></div>
+    <div class="data-row"><span class="label">TWS:</span><span class="value" id="tws">--</span></div>
+    <div class="data-row"><span class="label">TWA:</span><span class="value" id="twa">--</span></div>
+    <div class="data-row"><span class="label">APA:</span><span class="value" id="apa">--</span></div>
+    <div class="data-row"><span class="label">TWD:</span><span class="value" id="twd">--</span></div>
   </div>
 
-  <!-- Map -->
-  <div id="map"></div>
-
-  <!-- Raw Data -->
-  <h3>Raw NMEA Data</h3>
-  <pre id="display">Loading...</pre>
+  <div class="updated" id="updated">Last updated: --</div>
 
   <script>
-    // Initialize map
-    const map = L.map('map').setView([0, 0], 4);
-    L.tileLayer('https://{s}.tile.open
+    async function fetchData() {
+      try {
+        const res = await fetch("https://nmea-dashboard.onrender.com/api/data");
+        const data = await res.json();
+
+        const fields = ["lat", "lon", "cog", "sog", "aws", "awa", "tws", "twa", "apa", "twd"];
+        fields.forEach(id => {
+          document.getElementById(id).textContent = data[id] !== undefined ? data[id] : '--';
+        });
+
+        const now = new Date().toLocaleTimeString();
+        document.getElementById("updated").textContent = `Last updated: ${now}`;
+      } catch (e) {
+        console.error("Failed to fetch data", e);
+      }
+    }
+
+    fetchData();
+    setInterval(fetchData, 3000);
+  </script>
+</body>
+</html>
