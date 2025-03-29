@@ -80,11 +80,18 @@
 
       // Update map
       if (data.lat && data.lon) {
-        const lat = parseFloat(data.lat);
-        const lon = parseFloat(data.lon);
-        marker.setLatLng([lat, lon]);
-        map.setView([lat, lon], map.getZoom());
-      }
+        let lat = parseFloat(data.lat);
+let lon = parseFloat(data.lon);
+
+// Safety override if somehow a positive longitude slips through
+if (lon > 0 && lon < 180) {
+  lon = -lon;
+}
+
+if (!isNaN(lat) && !isNaN(lon)) {
+  marker.setLatLng([lat, lon]);
+  map.setView([lat, lon], map.getZoom());
+}
     }
 
     fetchData();
