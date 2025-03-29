@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Live Dovka Boat Data</title>
+  <title>Dovka Live Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -56,46 +56,4 @@
   <script>
     // Initialize map
     const map = L.map('map').setView([0, 0], 4);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-    }).addTo(map);
-    const marker = L.marker([0, 0]).addTo(map);
-
-    // Initialize gauges
-    const sogGauge = new JustGage({ id: "sogGauge", value: 0, min: 0, max: 10 });
-    const awsGauge = new JustGage({ id: "awsGauge", value: 0, min: 0, max: 30 });
-    const twsGauge = new JustGage({ id: "twsGauge", value: 0, min: 0, max: 30 });
-
-    async function fetchData() {
-      const res = await fetch("https://nmea-dashboard.onrender.com/api/data");
-      const data = await res.json();
-
-      // Update raw data display
-      document.getElementById("display").textContent = JSON.stringify(data, null, 2);
-
-      // Update gauges if values exist
-      if (data.sog) sogGauge.refresh(data.sog);
-      if (data.aws) awsGauge.refresh(data.aws);
-      if (data.tws) twsGauge.refresh(data.tws);
-
-      // Update map
-      if (data.lat && data.lon) {
-        let lat = parseFloat(data.lat);
-let lon = parseFloat(data.lon);
-
-// Safety override if somehow a positive longitude slips through
-if (lon > 0 && lon < 180) {
-  lon = -lon;
-}
-
-if (!isNaN(lat) && !isNaN(lon)) {
-  marker.setLatLng([lat, lon]);
-  map.setView([lat, lon], map.getZoom());
-}
-    }
-
-    fetchData();
-    setInterval(fetchData, 3000);
-  </script>
-</body>
-</html>
+    L.tileLayer('https://{s}.tile.open
